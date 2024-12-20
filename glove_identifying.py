@@ -1,9 +1,9 @@
 import os
 import sys
-os.chdir("BaseballCV")
 
-parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-sys.path.insert(0, parent_dir)
+os.chdir("BaseballCV")
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../BaseballCV')))
 
 from BaseballCV.scripts.load_tools import LoadTools
 from BaseballCV.scripts.savant_scraper import BaseballSavVideoScraper
@@ -91,4 +91,3 @@ with open('../pitch_frames.json', 'w') as f:
     json.dump(pitch_frames, f)
 
 scraper.cleanup_savant_videos(r'../videos')
-
