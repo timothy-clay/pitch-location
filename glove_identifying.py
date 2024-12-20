@@ -1,17 +1,16 @@
 import os
+import sys
 os.chdir("BaseballCV")
+
+parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, parent_dir)
 
 from BaseballCV.scripts.load_tools import LoadTools
 from BaseballCV.scripts.savant_scraper import BaseballSavVideoScraper
+
 from ultralytics import YOLO
 import cv2 
-import pandas as pd
 from tqdm import tqdm
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from ultralytics import utils
-import time
 import json
 
 scraper = BaseballSavVideoScraper()
