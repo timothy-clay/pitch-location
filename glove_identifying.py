@@ -45,7 +45,7 @@ for video_path in tqdm(os.listdir(r'../videos')[:5]):
         if not ret:
             break
 
-        results = model(frame, classes=[0, 1], device='mps', verbose=False)
+        results = model(frame, classes=[0, 1], device='cuda', verbose=False)
         conf = 0
 
         if len(results) > 0:
