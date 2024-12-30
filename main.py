@@ -1,5 +1,3 @@
-# add test comment
-
 import os
 import sys
 
@@ -12,8 +10,10 @@ from BaseballCV.scripts.savant_scraper import BaseballSavVideoScraper
 
 from ultralytics import YOLO
 import cv2 
+import pandas as pd
 from tqdm import tqdm
 import json
+import numpy as np
 
 scraper = BaseballSavVideoScraper()
 
@@ -47,7 +47,7 @@ for video_path in tqdm(os.listdir(r'../videos')[:5]):
         if not ret:
             break
 
-        results = model(frame, classes=[0, 1], device='cuda', verbose=False)
+        results = model(frame, classes=[0, 1], device='mps', verbose=False)
         conf = 0
 
         if len(results) > 0:
@@ -75,21 +75,45 @@ for video_path in tqdm(os.listdir(r'../videos')[:5]):
             plate_x1, plate_y1, plate_x2, plate_y2 = int(plate_x1), int(plate_y1), int(plate_x2), int(plate_y2)
             plate_conf = float(plate_box.conf[0])
 
-            frame_attrs = {'glove':{'x1':glove_x1, 'y1':glove_y1, 'x2':glove_x2, 'y2':glove_y2, 'conf':glove_conf},
-                           'plate':{'x1':plate_x1, 'y1':plate_y1, 'x2':plate_x2, 'y2':plate_y2, 'conf':plate_conf}, 
+            frame_attrs = {'glove_x1': glove_x1, 
+                           'glove_y1': glove_x2,
+                           'glove_x2': glove_y1,
+                           'glove_y2': glove_y2,
+                           'glove_conf': glove_conf,
+                           'plate_x1': plate_x1, 
+                           'plate_y1': plate_x2,
+                           'plate_x2': plate_y1,
+                           'plate_y2': plate_y2,
+                           'plate_conf': plate_conf,
                            'frame':frame_num}
 
             if glove_conf > 0.75:
                 heights[frame_num] = frame_attrs
 
     try:
-        pitch_frames[pitch_id] = heights[min(heights, key=lambda k: heights[k]['glove']['y1'])]
+        pitch_frames[pitch_id] = heights[min(heights, key=lambda k: heights[k]['glove_y1'])]
     except:
-        pitch_frames[pitch_id] = {'glove':{'x1':-1, 'y1':-1, 'x2':-1, 'y2':-1, 'conf':-1},
-                                  'plate':{'x1':-1, 'y1':-1, 'x2':-1, 'y2':-1, 'conf':-1},
-                                  'frame':-1}
+        pitch_frames[pitch_id] = {'glove_x1': np.nan, 
+                                  'glove_y1': np.nan,
+                                  'glove_x2': np.nan,
+                                  'glove_y2': np.nan,
+                                  'glove_conf': np.nan,
+                                  'plate_x1': np.nan, 
+                                  'plate_y1': np.nan,
+                                  'plate_x2': np.nan,
+                                  'plate_y2': np.nan,
+                                  'plate_conf': np.nan,
+                                  'frame':np.nan}
         
-with open('../pitch_frames.json', 'w') as f:
-    json.dump(pitch_frames, f)
+pitch_frames_df = pd.DataFrame(pitch_frames).T
+pitch_frames_df.reset_index(names='pitch_id', inplace=True)
+
+pitch_frames_df.to_csv('../pitch_frames_' + video_path[:6] + '.csv', index=False)
 
 scraper.cleanup_savant_videos(r'../videos')
+
+# page for pitches that didn't have auto identification
+# page to verify pitches that were auto identified
+# page to reclassify pitches that were auto idenfitied incorrectly
+
+# add a file that contains a list of game information for games that are done (home team, away team, date, score(?), results file name)
